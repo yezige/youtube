@@ -172,13 +172,21 @@ func (config playerConfig) getNFunction() (string, error) {
 	pos := start + bytes.IndexByte(config[start:], '{') + 1
 
 	// find the bracket closing the function
-	for brackets := 1; brackets > 0; pos++ {
-		switch config[pos] {
-		case '{':
-			brackets++
-		case '}':
-			brackets--
+	// for brackets := 1; brackets > 0; pos++ {
+	// 	switch config[pos] {
+	// 	case '{':
+	// 		brackets++
+	// 	case '}':
+	// 		brackets--
+	// 	}
+	// }
+
+	// match };
+	for pos <= len(config) -1 {
+		if string(config[pos-1:pos+1]) == "};" {
+			break;
 		}
+		pos++
 	}
 
 	return string(config[start:pos]), nil
