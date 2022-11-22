@@ -29,6 +29,7 @@ func (c *Client) getPlayerConfig(ctx context.Context, videoID string) (playerCon
 	// example: /s/player/f676c671/player_ias.vflset/en_US/base.js
 	playerPath := string(basejsPattern.Find(embedBody))
 	if playerPath == "" {
+		log.Println("embedBody", string(embedBody))
 		return nil, errors.New("unable to find basejs URL in playerConfig")
 	}
 
