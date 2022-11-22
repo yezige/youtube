@@ -1,17 +1,19 @@
 package youtube
 
+type playabilityStatus struct {
+	Status          string `json:"status"`
+	Reason          string `json:"reason"`
+	PlayableInEmbed bool   `json:"playableInEmbed"`
+	Miniplayer      struct {
+		MiniplayerRenderer struct {
+			PlaybackMode string `json:"playbackMode"`
+		} `json:"miniplayerRenderer"`
+	} `json:"miniplayer"`
+	ContextParams string `json:"contextParams"`
+}
+
 type playerResponseData struct {
-	PlayabilityStatus struct {
-		Status          string `json:"status"`
-		Reason          string `json:"reason"`
-		PlayableInEmbed bool   `json:"playableInEmbed"`
-		Miniplayer      struct {
-			MiniplayerRenderer struct {
-				PlaybackMode string `json:"playbackMode"`
-			} `json:"miniplayerRenderer"`
-		} `json:"miniplayer"`
-		ContextParams string `json:"contextParams"`
-	} `json:"playabilityStatus"`
+	PlayabilityStatus playabilityStatus `json:"playabilityStatus"`
 	StreamingData struct {
 		ExpiresInSeconds string   `json:"expiresInSeconds"`
 		Formats          []Format `json:"formats"`

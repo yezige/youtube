@@ -12,16 +12,17 @@ import (
 )
 
 type Video struct {
-	ID              string
-	Title           string
-	Description     string
-	Author          string
-	Duration        time.Duration
-	PublishDate     time.Time
-	Formats         FormatList
-	Thumbnails      Thumbnails
-	DASHManifestURL string // URI of the DASH manifest file
-	HLSManifestURL  string // URI of the HLS manifest file
+	ID                string
+	Title             string
+	Description       string
+	Author            string
+	Duration          time.Duration
+	PublishDate       time.Time
+	Formats           FormatList
+	Thumbnails        Thumbnails
+	DASHManifestURL   string // URI of the DASH manifest file
+	HLSManifestURL    string // URI of the HLS manifest file
+	PlayabilityStatus playabilityStatus
 }
 
 const dateFormat = "2006-01-02"
@@ -32,9 +33,9 @@ func (v *Video) parseVideoInfo(body []byte) error {
 		return fmt.Errorf("unable to parse player response JSON: %w", err)
 	}
 
-	if err := v.isVideoFromInfoDownloadable(prData); err != nil {
-		return err
-	}
+	// if err := v.isVideoFromInfoDownloadable(prData); err != nil {
+	// 	return err
+	// }
 
 	return v.extractDataFromPlayerResponse(prData)
 }
@@ -115,6 +116,7 @@ func (v *Video) extractDataFromPlayerResponse(prData playerResponseData) error {
 
 	v.HLSManifestURL = prData.StreamingData.HlsManifestURL
 	v.DASHManifestURL = prData.StreamingData.DashManifestURL
+	v.PlayabilityStatus = prData.PlayabilityStatus
 
 	return nil
 }
