@@ -33,9 +33,9 @@ func (v *Video) parseVideoInfo(body []byte) error {
 		return fmt.Errorf("unable to parse player response JSON: %w", err)
 	}
 
-	// if err := v.isVideoFromInfoDownloadable(prData); err != nil {
-	// 	return err
-	// }
+	if err := v.isVideoFromInfoDownloadable(prData); err != nil {
+		return err
+	}
 
 	return v.extractDataFromPlayerResponse(prData)
 }
