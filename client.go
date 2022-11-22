@@ -349,6 +349,8 @@ func (c *Client) httpDo(req *http.Request) (*http.Response, error) {
 
 	if c.Debug && res != nil {
 		log.Println(res.Status)
+		body, _ := io.ReadAll(res.Body)
+		log.Println(string(body))
 	}
 
 	return res, err
