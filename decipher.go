@@ -134,18 +134,19 @@ func evalJavascript(jsFunction, arg string) (string, error) {
 	const myName = "myFunction"
 
 	vm := goja.New()
-	_, err := vm.RunString(myName + "=" + jsFunction)
+	v, err := vm.RunString(myName + "=" + jsFunction + myName + "('" + arg + "')")
 	if err != nil {
 		return "", err
 	}
+	return v.Export().(string), nil
 
-	var output func(string) string
-	err = vm.ExportTo(vm.Get(myName), &output)
-	if err != nil {
-		return "", err
-	}
+	// var output func(string) string
+	// err = vm.ExportTo(vm.Get(myName), &output)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	return output(arg), nil
+	// return output(arg), nil
 }
 
 func (config playerConfig) getNFunction() (string, error) {
