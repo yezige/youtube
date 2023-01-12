@@ -14,7 +14,7 @@ type playabilityStatus struct {
 
 type playerResponseData struct {
 	PlayabilityStatus playabilityStatus `json:"playabilityStatus"`
-	StreamingData struct {
+	StreamingData     struct {
 		ExpiresInSeconds string   `json:"expiresInSeconds"`
 		Formats          []Format `json:"formats"`
 		AdaptiveFormats  []Format `json:"adaptiveFormats"`
@@ -75,6 +75,7 @@ type playerResponseData struct {
 type Format struct {
 	ItagNo           int    `json:"itag"`
 	URL              string `json:"url"`
+	URL_PROXY        string `json:"url_proxy"`
 	MimeType         string `json:"mimeType"`
 	Quality          string `json:"quality"`
 	Cipher           string `json:"signatureCipher"`
