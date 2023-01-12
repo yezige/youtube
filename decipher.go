@@ -185,6 +185,7 @@ func (config playerConfig) getNFunction() (string, error) {
 	// match };
 	for pos <= len(config) -1 {
 		if string(config[pos-1:pos+1]) == "};" {
+			pos++;
 			break;
 		}
 		pos++
