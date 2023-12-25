@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strconv"
 
-	v8 "rogchap.com/v8go"
+	"github.com/robertkrimen/otto"
 )
 
 func (c *Client) decipherURL(ctx context.Context, videoID string, cipher string) (string, error) {
@@ -133,13 +133,13 @@ func (config playerConfig) decodeNsig(encoded string) (string, error) {
 func evalJavascript(jsFunction, arg string) (string, error) {
 	const myName = "myFunction"
 
-	ctx := v8.NewContext()
-	ctx.RunScript("const " + myName + "=" + jsFunction, "main.js")
-	v, err := ctx.RunScript(myName + "('" + arg + "')", "run.js")
+	vm := otto.New()
+	vm.Run("const " + myName + "=" + jsFunction)
+	v, err := vm.Run(myName + "('" + arg + "')")
 	if err != nil {
 		return "", err
 	}
-	return v.String(), nil
+	return v.ToString()
 
 	// var output func(string) string
 	// err = vm.ExportTo(vm.Get(myName), &output)
