@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/dop251/goja"
+	v8 "rogchap.com/v8go"
 )
 
 func (c *Client) decipherURL(ctx context.Context, videoID string, cipher string) (string, error) {
@@ -133,12 +133,13 @@ func (config playerConfig) decodeNsig(encoded string) (string, error) {
 func evalJavascript(jsFunction, arg string) (string, error) {
 	const myName = "myFunction"
 
-	vm := goja.New()
-	v, err := vm.RunString(myName + "=" + jsFunction + myName + "('" + arg + "')")
+	ctx := v8.NewContext()
+	ctx.RunScript("const " + myName + "=" + jsFunction, "main.js")
+	v, err := ctx.RunScript(myName + "('" + arg + "')", "run.js")
 	if err != nil {
 		return "", err
 	}
-	return v.Export().(string), nil
+	return v.String(), nil
 
 	// var output func(string) string
 	// err = vm.ExportTo(vm.Get(myName), &output)
