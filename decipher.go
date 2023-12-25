@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/robertkrimen/otto"
 )
 
 func (c *Client) decipherURL(ctx context.Context, videoID string, cipher string) (string, error) {
@@ -131,15 +130,16 @@ func (config playerConfig) decodeNsig(encoded string) (string, error) {
 }
 
 func evalJavascript(jsFunction, arg string) (string, error) {
-	const myName = "myFunction"
+	// functionName := jsFunction[:strings.Index(jsFunction, "=")]
 
-	vm := otto.New()
-	vm.Run("const " + myName + "=" + jsFunction)
-	v, err := vm.Run(myName + "('" + arg + "')")
-	if err != nil {
-		return "", err
-	}
-	return v.ToString()
+	// vm := otto.New()
+	// vm.Run(jsFunction)
+	// v, err := vm.Get(functionName + "('" + arg + "');")
+	// if err != nil {
+	// 	return "", err
+	// }
+	// return v.ToString()
+	return "undefined", nil
 
 	// var output func(string) string
 	// err = vm.ExportTo(vm.Get(myName), &output)
