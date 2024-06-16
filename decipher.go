@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/dop251/goja"
 )
 
 func (c *Client) decipherURL(ctx context.Context, videoID string, cipher string) (string, error) {
@@ -130,24 +131,21 @@ func (config playerConfig) decodeNsig(encoded string) (string, error) {
 }
 
 func evalJavascript(jsFunction, arg string) (string, error) {
-	// functionName := jsFunction[:strings.Index(jsFunction, "=")]
+	const myName = "myFunction"
 
-	// vm := otto.New()
-	// vm.Run(jsFunction)
-	// v, err := vm.Get(functionName + "('" + arg + "');")
-	// if err != nil {
-	// 	return "", err
-	// }
-	// return v.ToString()
-	return "undefined", nil
+	vm := goja.New()
+	_, err := vm.RunString(myName + "=" + jsFunction)
+	if err != nil {
+		return "undefined", nil
+	}
 
-	// var output func(string) string
-	// err = vm.ExportTo(vm.Get(myName), &output)
-	// if err != nil {
-	// 	return "", err
-	// }
+	var output func(string) string
+	err = vm.ExportTo(vm.Get(myName), &output)
+	if err != nil {
+		return "undefined", nil
+	}
 
-	// return output(arg), nil
+	return output(arg), nil
 }
 
 func (config playerConfig) getNFunction() (string, error) {

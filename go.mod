@@ -6,6 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/bitly/go-simplejson v0.5.1
+	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/kkdai/youtube/v2 v2.10.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -18,14 +19,12 @@ require (
 )
 
 require (
-	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d // indirect
 	github.com/google/pprof v0.0.0-20231101202521-4ca4178f5c7a // indirect
 	github.com/sagikazarmark/locafero v0.3.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
 require (
@@ -43,7 +42,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/robertkrimen/otto v0.3.0
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
