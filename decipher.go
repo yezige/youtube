@@ -162,11 +162,14 @@ func (config playerConfig) getNFunction() (string, error) {
 	}
 
 	// find the beginning of the function
-	def := []byte(name + "=function(")
-	start := bytes.Index(config, def)
+	// def := []byte(name + "=function(")
+	// start := bytes.Index(config, def)
+	re, _ := regexp.Compile("[\n;]" + name + "=function\\(")
+	start := re.FindIndex(config)[0]
 	if start < 1 {
-		return "", fmt.Errorf("unable to extract n-function body: looking for '%s'", def)
+		return "", fmt.Errorf("unable to extract n-function body: looking for '%s'", re)
 	}
+	start++
 
 	// start after the first curly bracket
 	pos := start + bytes.IndexByte(config[start:], '{') + 1
