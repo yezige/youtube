@@ -179,8 +179,6 @@ func (config playerConfig) extraFunction(name string) (string, error) {
 	// start after the first curly bracket
 	pos := start + bytes.IndexByte(config[start:], '{') + 1
 
-	var strChar byte
-
 	// find the bracket closing the function
 	// for brackets := 1; brackets > 0; pos++ {
 	// 	switch config[pos] {

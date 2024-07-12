@@ -134,7 +134,6 @@ func (v *Video) extractDataFromPlayerResponse(prData playerResponseData) error {
 
 	v.HLSManifestURL = prData.StreamingData.HlsManifestURL
 	v.DASHManifestURL = prData.StreamingData.DashManifestURL
-	v.PlayabilityStatus = prData.PlayabilityStatus
 
 	return nil
 }
