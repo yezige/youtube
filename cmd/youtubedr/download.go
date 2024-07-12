@@ -16,7 +16,7 @@ var downloadCmd = &cobra.Command{
 	Short:   "Downloads a video from youtube",
 	Example: `youtubedr -o "Campaign Diary".mp4 https://www.youtube.com/watch\?v\=XbNghLqsVwU`,
 	Args:    cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		exitOnError(download(args[0]))
 	},
 }
@@ -32,8 +32,7 @@ func init() {
 
 	downloadCmd.Flags().StringVarP(&outputFile, "filename", "o", "", "The output file, the default is genated by the video title.")
 	downloadCmd.Flags().StringVarP(&outputDir, "directory", "d", ".", "The output directory.")
-	addQualityFlag(downloadCmd.Flags())
-	addMimeTypeFlag(downloadCmd.Flags())
+	addVideoSelectionFlags(downloadCmd.Flags())
 }
 
 func download(id string) error {
@@ -48,7 +47,7 @@ func download(id string) error {
 		if err := checkFFMPEG(); err != nil {
 			return err
 		}
-		return downloader.DownloadComposite(context.Background(), outputFile, video, outputQuality, mimetype)
+		return downloader.DownloadComposite(context.Background(), outputFile, video, outputQuality, mimetype, language)
 	}
 
 	return downloader.Download(context.Background(), video, format, outputFile)

@@ -11,7 +11,7 @@ var urlCmd = &cobra.Command{
 	Use:   "url",
 	Short: "Only output the stream-url to desired video",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		video, format, err := getVideoWithFormat(args[0])
 		exitOnError(err)
 
@@ -23,7 +23,6 @@ var urlCmd = &cobra.Command{
 }
 
 func init() {
-	addQualityFlag(urlCmd.Flags())
-	addMimeTypeFlag(urlCmd.Flags())
+	addVideoSelectionFlags(urlCmd.Flags())
 	rootCmd.AddCommand(urlCmd)
 }
