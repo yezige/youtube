@@ -74,7 +74,7 @@ func (c *Client) unThrottle(ctx context.Context, videoID string, urlString strin
 
 func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Values, error) {
 	// decrypt n-parameter
-	nSig := query.Get("v")
+	nSig := query.Get("n")
 	log := Logger.With("n", nSig)
 
 	if nSig != "" {
@@ -82,7 +82,7 @@ func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Value
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode nSig: %w", err)
 		}
-		query.Set("v", nDecoded)
+		query.Set("n", nDecoded)
 		log = log.With("decoded", nDecoded)
 	}
 
@@ -105,7 +105,7 @@ const (
 )
 
 var (
-	nFunctionNameRegexp = regexp.MustCompile("\\.get\\(\"n\"\\)\\)&&\\(b=([a-zA-Z0-9$]{0,3})\\[(\\d+)\\](.+)\\|\\|([a-zA-Z0-9]{0,3})")
+	nFunctionNameRegexp = regexp.MustCompile("\\.length\\|\\|([a-zA-Z0-9]{3})\\(")
 	actionsObjRegexp    = regexp.MustCompile(fmt.Sprintf(
 		"var (%s)=\\{((?:(?:%s%s|%s%s|%s%s),?\\n?)+)\\};", jsvarStr, jsvarStr, swapStr, jsvarStr, spliceStr, jsvarStr, reverseStr))
 
@@ -155,11 +155,11 @@ func (config playerConfig) getNFunction() (string, error) {
 	}
 
 	var name string
-	if idx, _ := strconv.Atoi(string(nameResult[2])); idx == 0 {
-		name = string(nameResult[4])
-	} else {
+	// if idx, _ := strconv.Atoi(string(nameResult[2])); idx == 0 {
+	// 	name = string(nameResult[4])
+	// } else {
 		name = string(nameResult[1])
-	}
+	// }
 
 	return config.extraFunction(name)
 

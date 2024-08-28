@@ -30,7 +30,7 @@ var (
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
 // var DefaultClient = AndroidClient
-var DefaultClient = EmbeddedClient
+var DefaultClient = WebClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
@@ -175,7 +175,7 @@ var (
 	// WebClient, better to use Android client but go ahead.
 	WebClient = clientInfo{
 		name:      "WEB",
-		version:   "2.20220801.00.00",
+		version:   "2.20210617.01.00",
 		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
 		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
 	}
