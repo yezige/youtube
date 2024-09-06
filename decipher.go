@@ -74,7 +74,13 @@ func (c *Client) unThrottle(ctx context.Context, videoID string, urlString strin
 
 func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Values, error) {
 	// decrypt n-parameter
-	nSig := query.Get("n")
+	var n string
+	if c.client.name == "WEB" {
+		n = "n"
+	} else {
+		n = "v"
+	}
+	nSig := query.Get(n)
 	log := Logger.With("n", nSig)
 
 	if nSig != "" {
@@ -82,7 +88,7 @@ func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Value
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode nSig: %w", err)
 		}
-		query.Set("n", nDecoded)
+		query.Set(n, nDecoded)
 		log = log.With("decoded", nDecoded)
 	}
 
@@ -277,4 +283,13 @@ func (config playerConfig) parseDecipherOps() (operations []DecipherOperation, e
 		}
 	}
 	return ops, nil
+}
+
+func (config playerConfig) getSignatureTimestamp() (string, error) {
+	result := signatureRegexp.FindSubmatch(config)
+	if result == nil {
+		return "", ErrSignatureTimestampNotFound
+	}
+
+	return string(result[1]), nil
 }

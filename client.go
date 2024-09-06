@@ -135,7 +135,7 @@ type innertubeRequest struct {
 	PlaybackContext *playbackContext  `json:"playbackContext,omitempty"`
 	ContentCheckOK  bool              `json:"contentCheckOk,omitempty"`
 	RacyCheckOk     bool              `json:"racyCheckOk,omitempty"`
-	Params          string            `json:"params"`
+	Params          string            `json:"params,omitempty"`
 }
 
 type playbackContext struct {
@@ -143,8 +143,8 @@ type playbackContext struct {
 }
 
 type contentPlaybackContext struct {
-	// SignatureTimestamp string `json:"signatureTimestamp"`
-	HTML5Preference string `json:"html5Preference"`
+	SignatureTimestamp string `json:"signatureTimestamp,omitempty"`
+	HTML5Preference string `json:"html5Preference,omitempty"`
 }
 
 type inntertubeContext struct {
@@ -158,8 +158,8 @@ type innertubeClient struct {
 	ClientVersion     string `json:"clientVersion"`
 	AndroidSDKVersion int    `json:"androidSDKVersion,omitempty"`
 	UserAgent         string `json:"userAgent,omitempty"`
-	TimeZone          string `json:"timeZone"`
-	UTCOffset         int    `json:"utcOffsetMinutes"`
+	TimeZone          string `json:"timeZone,omitempty"`
+	UTCOffset         int    `json:"utcOffsetMinutes,omitempty"`
 }
 
 // client info for the innertube API
@@ -177,7 +177,7 @@ var (
 		name:      "WEB",
 		version:   "2.20210617.01.00",
 		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
-		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+		// userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
 	}
 
 	// AndroidClient, download go brrrrrr.
@@ -199,18 +199,40 @@ var (
 )
 
 func (c *Client) videoDataByInnertube(ctx context.Context, id string) ([]byte, error) {
-	data := innertubeRequest{
-		VideoID:        id,
-		Context:        prepareInnertubeContext(*c.client),
-		ContentCheckOK: true,
-		RacyCheckOk:    true,
-		Params:         playerParams,
-		PlaybackContext: &playbackContext{
-			ContentPlaybackContext: contentPlaybackContext{
-				// SignatureTimestamp: sts,
-				HTML5Preference: "HTML5_PREF_WANTS",
+	var data innertubeRequest
+	if c.client.name == "WEB" {
+		config, err := c.getPlayerConfig(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		// fetch sts first
+		sts, err := config.getSignatureTimestamp()
+		if err != nil {
+			return nil, err
+		}
+		data = innertubeRequest{
+			VideoID: id,
+			Context: prepareInnertubeContext(*c.client),
+			PlaybackContext: &playbackContext{
+				ContentPlaybackContext: contentPlaybackContext{
+					SignatureTimestamp: sts,
+				},
 			},
-		},
+		}
+	} else {
+		data = innertubeRequest{
+			VideoID:        id,
+			Context:        prepareInnertubeContext(*c.client),
+			ContentCheckOK: true,
+			RacyCheckOk:    true,
+			Params:         playerParams,
+			PlaybackContext: &playbackContext{
+				ContentPlaybackContext: contentPlaybackContext{
+					// SignatureTimestamp: sts,
+					HTML5Preference: "HTML5_PREF_WANTS",
+				},
+			},
+		}
 	}
 
 	return c.httpPostBodyBytes(ctx, "https://www.youtube.com/youtubei/v1/player?key="+c.client.key, data)
