@@ -29,8 +29,8 @@ var (
 )
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
-var DefaultClient = AndroidClient
-// var DefaultClient = WebClient
+// var DefaultClient = AndroidClient
+var DefaultClient = WebClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
