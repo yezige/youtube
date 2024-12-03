@@ -111,7 +111,7 @@ const (
 )
 
 var (
-	nFunctionNameRegexp = regexp.MustCompile("([a-zA-Z0-9]{3})\\=function\\(a\\)\\{var b=a\\.split\\(")
+	nFunctionNameRegexp = regexp.MustCompile("[a-zA-Z0-9]=\\[([a-zA-Z0-9]{3})\\];")
 	actionsObjRegexp    = regexp.MustCompile(fmt.Sprintf(
 		"var (%s)=\\{((?:(?:%s%s|%s%s|%s%s),?\\n?)+)\\};", jsvarStr, jsvarStr, swapStr, jsvarStr, spliceStr, jsvarStr, reverseStr))
 
