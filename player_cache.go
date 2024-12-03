@@ -6,11 +6,13 @@ import (
 
 const defaultCacheExpiration = time.Minute * time.Duration(5)
 
-type playerCache struct {
+type playerCacheRow struct {
 	key       string
 	expiredAt time.Time
 	config    playerConfig
 }
+
+type playerCache []playerCacheRow
 
 // Get : get cache  when it has same video id and not expired
 func (s playerCache) Get(key string) playerConfig {
@@ -19,8 +21,10 @@ func (s playerCache) Get(key string) playerConfig {
 
 // GetCacheBefore : can pass time for testing
 func (s playerCache) GetCacheBefore(key string, time time.Time) playerConfig {
-	if key == s.key && s.expiredAt.After(time) {
-		return s.config
+	for _, cache := range s {
+		if key == cache.key && cache.expiredAt.After(time) {
+			return cache.config
+		}
 	}
 	return nil
 }
@@ -31,7 +35,17 @@ func (s *playerCache) Set(key string, operations playerConfig) {
 }
 
 func (s *playerCache) setWithExpiredTime(key string, config playerConfig, time time.Time) {
-	s.key = key
-	s.config = config
-	s.expiredAt = time
+	haskey := false
+	for _, cache := range *s {
+		if key == cache.key && cache.expiredAt.After(time) {
+			haskey = true
+		}
+	}
+	if (!haskey) {
+		*s = append(*s, playerCacheRow{
+			key: key,
+			config: config,
+			expiredAt: time,
+		})
+	}
 }
