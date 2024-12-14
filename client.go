@@ -144,7 +144,7 @@ type playbackContext struct {
 
 type contentPlaybackContext struct {
 	SignatureTimestamp string `json:"signatureTimestamp,omitempty"`
-	HTML5Preference string `json:"html5Preference,omitempty"`
+	HTML5Preference    string `json:"html5Preference,omitempty"`
 }
 
 type inntertubeContext struct {
@@ -160,6 +160,10 @@ type innertubeClient struct {
 	UserAgent         string `json:"userAgent,omitempty"`
 	TimeZone          string `json:"timeZone,omitempty"`
 	UTCOffset         int    `json:"utcOffsetMinutes,omitempty"`
+	OsName            string `json:"osName,omitempty"`
+	OsVersion         string `json:"osVersion,omitempty"`
+	Platform          string `json:"platform,omitempty"`
+	ClientFormFactor  string `json:"clientFormFactor,omitempty"`
 }
 
 // client info for the innertube API
@@ -174,19 +178,18 @@ type clientInfo struct {
 var (
 	// WebClient, better to use Android client but go ahead.
 	WebClient = clientInfo{
-		name:      "WEB",
-		version:   "2.20210617.01.00",
-		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
-		// userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+		name:    "WEB",
+		version: "2.20241121.01.00",
+		key:     "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
 	}
 
-	// AndroidClient, download go brrrrrr.
+	// AndroidClient, https://github.com/LuanRT/YouTube.js/blob/main/src/utils/Constants.ts
 	AndroidClient = clientInfo{
 		name:           "ANDROID",
-		version:        "18.11.34",
+		version:        "19.35.36",
 		key:            "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
-		userAgent:      "com.google.android.youtube/18.11.34 (Linux; U; Android 11) gzip",
-		androidVersion: 30,
+		userAgent:      "com.google.android.youtube/19.35.36(Linux; U; Android 13; en_US; SM-S908E Build/TP1A.220624.014) gzip",
+		androidVersion: 33,
 	}
 
 	// EmbeddedClient, not really tested.
@@ -252,11 +255,14 @@ func prepareInnertubeContext(clientInfo clientInfo) inntertubeContext {
 		Client: innertubeClient{
 			HL:                "en",
 			GL:                "US",
-			TimeZone:          "UTC",
 			ClientName:        clientInfo.name,
 			ClientVersion:     clientInfo.version,
 			AndroidSDKVersion: clientInfo.androidVersion,
 			UserAgent:         clientInfo.userAgent,
+			OsName:            "Android",
+			OsVersion:         "13",
+			Platform:          "MOBILE",
+			ClientFormFactor:  "SMALL_FORM_FACTOR",
 		},
 	}
 }
