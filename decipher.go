@@ -74,12 +74,7 @@ func (c *Client) unThrottle(ctx context.Context, videoID string, urlString strin
 
 func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Values, error) {
 	// decrypt n-parameter
-	var n string
-	if c.client.name == "WEB" {
-		n = "n"
-	} else {
-		n = "v"
-	}
+	var n = "n"
 	nSig := query.Get(n)
 	log := Logger.With("n", nSig)
 
@@ -90,6 +85,10 @@ func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Value
 		}
 		query.Set(n, nDecoded)
 		log = log.With("decoded", nDecoded)
+	}
+	
+	if c.client.name == "WEB" {
+		query.Set("cver", c.client.version)
 	}
 
 	log.Debug("nParam")
@@ -160,12 +159,7 @@ func (config playerConfig) getNFunction() (string, error) {
 		return "", errors.New("unable to extract n-function name")
 	}
 
-	var name string
-	// if idx, _ := strconv.Atoi(string(nameResult[2])); idx == 0 {
-	// 	name = string(nameResult[4])
-	// } else {
-		name = string(nameResult[1])
-	// }
+	var name = string(nameResult[1])
 
 	return config.extraFunction(name)
 

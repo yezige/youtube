@@ -10,8 +10,11 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"sync/atomic"
+
+	"github.com/bitly/go-simplejson"
 
 	"log/slog"
 )
@@ -30,6 +33,7 @@ var (
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
 var DefaultClient = AndroidClient
+
 // var DefaultClient = WebClient
 
 // Client offers methods to download video metadata and video streams.
@@ -152,18 +156,30 @@ type inntertubeContext struct {
 }
 
 type innertubeClient struct {
-	HL                string `json:"hl"`
-	GL                string `json:"gl"`
-	ClientName        string `json:"clientName"`
-	ClientVersion     string `json:"clientVersion"`
-	AndroidSDKVersion int    `json:"androidSDKVersion,omitempty"`
-	UserAgent         string `json:"userAgent,omitempty"`
-	TimeZone          string `json:"timeZone,omitempty"`
-	UTCOffset         int    `json:"utcOffsetMinutes,omitempty"`
-	OsName            string `json:"osName,omitempty"`
-	OsVersion         string `json:"osVersion,omitempty"`
-	Platform          string `json:"platform,omitempty"`
-	ClientFormFactor  string `json:"clientFormFactor,omitempty"`
+	HL                 string     `json:"hl,omitempty"`
+	GL                 string     `json:"gl,omitempty"`
+	ClientName         string     `json:"clientName,omitempty"`
+	ClientVersion      string     `json:"clientVersion,omitempty"`
+	AndroidSDKVersion  int        `json:"androidSDKVersion,omitempty"`
+	UserAgent          string     `json:"userAgent,omitempty"`
+	TimeZone           string     `json:"timeZone,omitempty"`
+	UTCOffset          int        `json:"utcOffsetMinutes,omitempty"`
+	OsName             string     `json:"osName,omitempty"`
+	OsVersion          string     `json:"osVersion,omitempty"`
+	Platform           string     `json:"platform,omitempty"`
+	ClientFormFactor   string     `json:"clientFormFactor,omitempty"`
+	AcceptLanguage     string     `json:"acceptLanguage,omitempty"`
+	AcceptRegion       string     `json:"acceptRegion,omitempty"`
+	DeviceMake         string     `json:"deviceMake,omitempty"`
+	DeviceModel        string     `json:"deviceModel,omitempty"`
+	ScreenHeightPoints int        `json:"screenHeightPoints,omitempty"`
+	ScreenWidthPoints  int        `json:"screenWidthPoints,omitempty"`
+	ConfigInfo         ConfigInfo `json:"configInfo,omitempty"`
+	Chipset            string     `json:"chipset,omitempty"`
+}
+
+type ConfigInfo struct {
+	AppInstallData string `json:"appInstallData,omitempty"`
 }
 
 // client info for the innertube API
@@ -215,7 +231,7 @@ func (c *Client) videoDataByInnertube(ctx context.Context, id string) ([]byte, e
 		}
 		data = innertubeRequest{
 			VideoID: id,
-			Context: prepareInnertubeContext(*c.client),
+			Context: c.prepareInnertubeContext(),
 			PlaybackContext: &playbackContext{
 				ContentPlaybackContext: contentPlaybackContext{
 					SignatureTimestamp: sts,
@@ -225,7 +241,7 @@ func (c *Client) videoDataByInnertube(ctx context.Context, id string) ([]byte, e
 	} else {
 		data = innertubeRequest{
 			VideoID:        id,
-			Context:        prepareInnertubeContext(*c.client),
+			Context:        c.prepareInnertubeContext(),
 			ContentCheckOK: true,
 			RacyCheckOk:    true,
 			Params:         playerParams,
@@ -243,32 +259,65 @@ func (c *Client) videoDataByInnertube(ctx context.Context, id string) ([]byte, e
 
 func (c *Client) transcriptDataByInnertube(ctx context.Context, id string, lang string) ([]byte, error) {
 	data := innertubeRequest{
-		Context: prepareInnertubeContext(*c.client),
+		Context: c.prepareInnertubeContext(),
 		Params:  transcriptVideoID(id, lang),
 	}
 
 	return c.httpPostBodyBytes(ctx, "https://www.youtube.com/youtubei/v1/get_transcript?key="+c.client.key, data)
 }
 
-func prepareInnertubeContext(clientInfo clientInfo) inntertubeContext {
+func (c *Client) prepareInnertubeContext() inntertubeContext {
 	return inntertubeContext{
 		Client: innertubeClient{
-			HL:                "en",
-			GL:                "US",
-			ClientName:        clientInfo.name,
-			ClientVersion:     clientInfo.version,
-			AndroidSDKVersion: clientInfo.androidVersion,
-			UserAgent:         clientInfo.userAgent,
-			OsName:            "Android",
-			OsVersion:         "13",
-			Platform:          "MOBILE",
-			ClientFormFactor:  "SMALL_FORM_FACTOR",
+			ClientName:         c.client.name,
+			ClientVersion:      c.client.version,
+			AndroidSDKVersion:  c.client.androidVersion,
+			UserAgent:          c.client.userAgent,
+			OsName:             "Android",
+			OsVersion:          "13",
+			Platform:           "MOBILE",
+			ClientFormFactor:   "SMALL_FORM_FACTOR",
+			AcceptLanguage:     "en",
+			AcceptRegion:       "US",
+			DeviceMake:         "Google",
+			DeviceModel:        "sdk_gphone64_x86_64",
+			ScreenHeightPoints: 840,
+			ScreenWidthPoints:  432,
+			ConfigInfo: ConfigInfo{
+				AppInstallData: c.getAppInstallData(),
+			},
+			TimeZone: "UTC",
+			Chipset:  "qcom;taro",
 		},
 	}
 }
 
-func prepareInnertubePlaylistData(ID string, continuation bool, clientInfo clientInfo) innertubeRequest {
-	context := prepareInnertubeContext(clientInfo)
+// 获取 AppInstallData
+func (c *Client) getAppInstallData() string {
+	body, err := c.httpGetBodyBytes(context.Background(), "https://www.youtube.com/sw.js_data")
+	log := slog.With("appInstallData", body)
+	if err != nil {
+		return ""
+	}
+	if string(body[:4]) != ")]}" {
+		log.Debug("error sw.js_data")
+		return ""
+	}
+	r, _ := regexp.Compile(`^\)\]\}'`)
+	body = r.ReplaceAll(body, []byte(""))
+
+	var data *simplejson.Json
+	data, err = simplejson.NewJson(body)
+	if err != nil {
+		log.Debug("error decode sw.js_data")
+		return ""
+	}
+	dataSecret, _ := data.GetIndex(0).GetIndex(2).GetIndex(0).GetIndex(0).GetIndex(61).StringArray()
+	return dataSecret[len(dataSecret)-1]
+}
+
+func (c *Client) prepareInnertubePlaylistData(ID string, continuation bool) innertubeRequest {
+	context := c.prepareInnertubeContext()
 
 	if continuation {
 		return innertubeRequest{
@@ -321,7 +370,7 @@ func (c *Client) GetPlaylistContext(ctx context.Context, url string) (*Playlist,
 		return nil, fmt.Errorf("extractPlaylistID failed: %w", err)
 	}
 
-	data := prepareInnertubePlaylistData(id, false, *c.client)
+	data := c.prepareInnertubePlaylistData(id, false)
 	body, err := c.httpPostBodyBytes(ctx, "https://www.youtube.com/youtubei/v1/browse?key="+c.client.key, data)
 	if err != nil {
 		return nil, err
