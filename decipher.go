@@ -64,7 +64,11 @@ func (c *Client) unThrottle(ctx context.Context, videoID string, urlString strin
 		writeArtifact("video-"+videoID+".url", []byte(uri.String()))
 	}
 
-	query, err := c.decryptNParam(config, uri.Query())
+	query := uri.Query()
+
+	query.Set("pot", c.client.po.PoToken)
+
+	query, err = c.decryptNParam(config, query)
 	if err != nil {
 		return "", err
 	}
