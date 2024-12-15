@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/dop251/goja"
 )
@@ -68,6 +69,11 @@ func (c *Client) unThrottle(ctx context.Context, videoID string, urlString strin
 		return "", err
 	}
 
+	query, err = c.decryptSignParam(config, query)
+	if err != nil {
+		return "", err
+	}
+
 	uri.RawQuery = query.Encode()
 	return uri.String(), nil
 }
@@ -86,12 +92,38 @@ func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Value
 		query.Set(n, nDecoded)
 		log = log.With("decoded", nDecoded)
 	}
-	
+
 	if c.client.name == "WEB" {
 		query.Set("cver", c.client.version)
 	}
 
-	log.Debug("nParam")
+	log.Debug("decryptNParam")
+
+	return query, nil
+}
+
+// 计算签名
+// youtube-cloud/youtube-js/node_modules/youtubei.js/dist/src/core/Player.js
+func (c *Client) decryptSignParam(config playerConfig, query url.Values) (url.Values, error) {
+	// decrypt s-parameter
+	sign := query.Get("s")
+	log := Logger.With("s", sign)
+
+	if sign != "" {
+		decoded, err := config.decodeSign(sign)
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode sign: %w", err)
+		}
+		if query.Get("sp") != "" {
+			query.Set(query.Get("sp"), decoded)
+		} else {
+			query.Set("signature", decoded)
+		}
+	
+		log = log.With("decoded", decoded)
+	}
+
+	log.Debug("decryptSignParam")
 
 	return query, nil
 }
@@ -110,8 +142,9 @@ const (
 )
 
 var (
-	nFunctionNameRegexp = regexp.MustCompile("[a-zA-Z0-9]=\\[([a-zA-Z0-9]{3})\\];")
-	actionsObjRegexp    = regexp.MustCompile(fmt.Sprintf(
+	nFunctionNameRegexp    = regexp.MustCompile("[a-zA-Z0-9]=\\[([a-zA-Z0-9]{3})\\];")
+	signFunctionNameRegexp = regexp.MustCompile("function\\(([A-Za-z_0-9]+)\\)\\{([A-Za-z_0-9]+=[A-Za-z_0-9]+\\.split\\(\"\"\\)(.+?)\\.join\\(\"\"\\))\\}")
+	actionsObjRegexp       = regexp.MustCompile(fmt.Sprintf(
 		"var (%s)=\\{((?:(?:%s%s|%s%s|%s%s),?\\n?)+)\\};", jsvarStr, jsvarStr, swapStr, jsvarStr, spliceStr, jsvarStr, reverseStr))
 
 	actionsFuncRegexp = regexp.MustCompile(fmt.Sprintf(
@@ -128,6 +161,14 @@ var (
 
 func (config playerConfig) decodeNsig(encoded string) (string, error) {
 	fBody, err := config.getNFunction()
+	if err != nil {
+		return "", err
+	}
+
+	return evalJavascript(fBody, encoded)
+}
+func (config playerConfig) decodeSign(encoded string) (string, error) {
+	fBody, err := config.getSignFunction()
 	if err != nil {
 		return "", err
 	}
@@ -161,8 +202,23 @@ func (config playerConfig) getNFunction() (string, error) {
 
 	var name = string(nameResult[1])
 
-	return config.extraFunction(name)
+	return config.getStringBetweenStrings(fmt.Sprintf("%s=function\\(", name), "join\\(\"\"\\)\\};", 0), nil
+}
 
+func (config playerConfig) getSignFunction() (string, error) {
+	match := signFunctionNameRegexp.FindSubmatch(config)
+	if len(match) == 0 {
+		return "", errors.New("unable to extract n-function name")
+	}
+
+	objReg, _ := regexp.Compile(`\.|\[`)
+	varName := match[1]
+	objNameArr := objReg.Split(string(match[3]), 2)
+	objName := strings.TrimSpace(strings.Replace(string(objNameArr[0]), ";", "", -1))
+	functions := config.getStringBetweenStrings(fmt.Sprintf(`var %s={`, objName), "};", 1)
+
+	// function descramble_sig(k) { let Z1={r5:function(k,y){var q=k[0];k[0]=k[y%k.length];k[y%k.length]=q},\nw8:function(k,y){k.splice(0,y)},\nG9:function(k){k.reverse()}}; k=k.split("");Z1.w8(k,2);Z1.G9(k,62);Z1.r5(k,5);Z1.w8(k,1);Z1.G9(k,18);Z1.w8(k,2);Z1.G9(k,26);return k.join("") } descramble_sig(sig);
+	return fmt.Sprintf(`function descramble_sig(%s) { let %s={%s}; %s };`, varName, objName, functions, match[2]), nil
 }
 
 func (config playerConfig) extraFunction(name string) (string, error) {
@@ -190,9 +246,9 @@ func (config playerConfig) extraFunction(name string) (string, error) {
 	// }
 
 	// match };
-	for pos <= len(config) -1 {
+	for pos <= len(config)-1 {
 		if string(config[pos-10:pos]) == "join(\"\")};" {
-			break;
+			break
 		}
 		pos++
 	}
@@ -286,4 +342,14 @@ func (config playerConfig) getSignatureTimestamp() (string, error) {
 	}
 
 	return string(result[1]), nil
+}
+
+func (config playerConfig) getStringBetweenStrings(start string, end string, index int) string {
+	var rege = regexp.MustCompile(`(?s)` + start + `(.*?)` + end)
+	result := rege.FindSubmatch(config)
+	if result == nil {
+		return ""
+	}
+
+	return string(result[index])
 }

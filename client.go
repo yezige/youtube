@@ -24,7 +24,7 @@ const (
 	Size1Mb  = Size1Kb * 1024
 	Size10Mb = Size1Mb * 10
 
-	playerParams = "CgIQBg=="
+	playerParams = "YAHIAQE%3D"
 )
 
 var (
@@ -32,9 +32,8 @@ var (
 )
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
-var DefaultClient = AndroidClient
-
-// var DefaultClient = WebClient
+// var DefaultClient = AndroidClient
+var DefaultClient = WebClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
@@ -79,6 +78,9 @@ func (c *Client) GetVideoContext(ctx context.Context, url string) (*Video, error
 
 func (c *Client) videoFromID(ctx context.Context, id string) (*Video, error) {
 	c.assureClient()
+
+	c.getSW()
+	c.getPoToken()
 
 	body, err := c.videoDataByInnertube(ctx, id)
 	if err != nil {
@@ -132,54 +134,115 @@ func (c *Client) videoFromID(ctx context.Context, id string) (*Video, error) {
 }
 
 type innertubeRequest struct {
-	VideoID         string            `json:"videoId,omitempty"`
-	BrowseID        string            `json:"browseId,omitempty"`
-	Continuation    string            `json:"continuation,omitempty"`
-	Context         inntertubeContext `json:"context"`
-	PlaybackContext *playbackContext  `json:"playbackContext,omitempty"`
-	ContentCheckOK  bool              `json:"contentCheckOk,omitempty"`
-	RacyCheckOk     bool              `json:"racyCheckOk,omitempty"`
-	Params          string            `json:"params,omitempty"`
+	VideoID                    string                              `json:"videoId,omitempty"`
+	BrowseID                   string                              `json:"browseId,omitempty"`
+	Continuation               string                              `json:"continuation,omitempty"`
+	Context                    inntertubeContext                   `json:"context"`
+	PlaybackContext            *playbackContext                    `json:"playbackContext,omitempty"`
+	ContentCheckOK             bool                                `json:"contentCheckOk,omitempty"`
+	RacyCheckOk                bool                                `json:"racyCheckOk,omitempty"`
+	Params                     string                              `json:"params,omitempty"`
+	ServiceIntegrityDimensions innertubeServiceIntegrityDimensions `json:"serviceIntegrityDimensions,omitempty"`
 }
 
+type innertubeServiceIntegrityDimensions struct {
+	PoToken string `json:"poToken,omitempty"`
+}
+
+type poToken struct {
+	PoToken     string `json:"poToken,omitempty"`
+	VisitorData string `json:"visitorData,omitempty"`
+}
 type playbackContext struct {
 	ContentPlaybackContext contentPlaybackContext `json:"contentPlaybackContext"`
 }
 
 type contentPlaybackContext struct {
-	SignatureTimestamp string `json:"signatureTimestamp,omitempty"`
-	HTML5Preference    string `json:"html5Preference,omitempty"`
+	AutoCaptionsDefaultOn   bool                           `json:"autoCaptionsDefaultOn,omitempty"`
+	AutonavState            string                         `json:"autonavState,omitempty"`
+	CurrentUrl              string                         `json:"currentUrl,omitempty"`
+	HTML5Preference         string                         `json:"html5Preference,omitempty"`
+	LactMilliseconds        string                         `json:"lactMilliseconds,omitempty"`
+	Referer                 string                         `json:"referer,omitempty"`
+	SignatureTimestamp      string                         `json:"signatureTimestamp,omitempty"`
+	Splay                   bool                           `json:"Splay,omitempty"`
+	Vis                     int                            `json:"vis,omitempty"`
+	WatchAmbientModeContext contextWatchAmbientModeContext `json:"watchAmbientModeContext,omitempty"`
+}
+
+type contextWatchAmbientModeContext struct {
+	HasShownAmbientMode     bool `json:"hasShownAmbientMode,omitempty"`
+	WatchAmbientModeEnabled bool `json:"watchAmbientModeEnabled,omitempty"`
 }
 
 type inntertubeContext struct {
-	Client innertubeClient `json:"client"`
+	Client  innertubeClient          `json:"client"`
+	User    inntertubeContextUser    `json:"user,omitempty"`
+	Request inntertubeContextRequest `json:"request,omitempty"`
+}
+
+type inntertubeContextUser struct {
+	EnableSafetyMode bool `json:"enableSafetyMode,omitempty"`
+	LockedSafetyMode bool `json:"lockedSafetyMode,omitempty"`
+}
+type inntertubeContextRequest struct {
+	UseSsl                  bool     `json:"useSsl,omitempty"`
+	InternalExperimentFlags []string `json:"internalExperimentFlags,omitempty"`
 }
 
 type innertubeClient struct {
-	HL                 string     `json:"hl,omitempty"`
-	GL                 string     `json:"gl,omitempty"`
-	ClientName         string     `json:"clientName,omitempty"`
-	ClientVersion      string     `json:"clientVersion,omitempty"`
-	AndroidSDKVersion  int        `json:"androidSDKVersion,omitempty"`
-	UserAgent          string     `json:"userAgent,omitempty"`
-	TimeZone           string     `json:"timeZone,omitempty"`
-	UTCOffset          int        `json:"utcOffsetMinutes,omitempty"`
-	OsName             string     `json:"osName,omitempty"`
-	OsVersion          string     `json:"osVersion,omitempty"`
-	Platform           string     `json:"platform,omitempty"`
-	ClientFormFactor   string     `json:"clientFormFactor,omitempty"`
-	AcceptLanguage     string     `json:"acceptLanguage,omitempty"`
-	AcceptRegion       string     `json:"acceptRegion,omitempty"`
-	DeviceMake         string     `json:"deviceMake,omitempty"`
-	DeviceModel        string     `json:"deviceModel,omitempty"`
-	ScreenHeightPoints int        `json:"screenHeightPoints,omitempty"`
-	ScreenWidthPoints  int        `json:"screenWidthPoints,omitempty"`
-	ConfigInfo         ConfigInfo `json:"configInfo,omitempty"`
-	Chipset            string     `json:"chipset,omitempty"`
+	HL                 string               `json:"hl,omitempty"`
+	GL                 string               `json:"gl,omitempty"`
+	RemoteHost         string               `json:"remoteHost,omitempty"`
+	ScreenDensityFloat int                  `json:"screenDensityFloat,omitempty"`
+	ScreenHeightPoints int                  `json:"screenHeightPoints,omitempty"`
+	ScreenPixelDensity int                  `json:"screenPixelDensity,omitempty"`
+	ScreenWidthPoints  int                  `json:"screenWidthPoints,omitempty"`
+	VisitorData        string               `json:"visitorData,omitempty"`
+	ClientName         string               `json:"clientName,omitempty"`
+	ClientVersion      string               `json:"clientVersion,omitempty"`
+	OsName             string               `json:"osName,omitempty"`
+	OsVersion          string               `json:"osVersion,omitempty"`
+	Platform           string               `json:"platform,omitempty"`
+	ClientFormFactor   string               `json:"clientFormFactor,omitempty"`
+	UserInterfaceTheme string               `json:"userInterfaceTheme,omitempty"`
+	TimeZone           string               `json:"timeZone,omitempty"`
+	UserAgent          string               `json:"userAgent,omitempty"`
+	OriginalUrl        string               `json:"originalUrl,omitempty"`
+	DeviceMake         string               `json:"deviceMake,omitempty"`
+	DeviceModel        string               `json:"deviceModel,omitempty"`
+	BrowserName        string               `json:"browserName,omitempty"`
+	BrowserVersion     string               `json:"browserVersion,omitempty"`
+	UtcOffsetMinutes   int                  `json:"utcOffsetMinutes,omitempty"`
+	MemoryTotalKbytes  string               `json:"memoryTotalKbytes,omitempty"`
+	MainAppWebInfo     clientMainAppWebInfo `json:"mainAppWebInfo,omitempty"`
+	ConfigInfo         clientConfigInfo     `json:"configInfo,omitempty"`
 }
 
-type ConfigInfo struct {
+type clientMainAppWebInfo struct {
+	GraftUrl                  string `json:"graftUrl,omitempty"`
+	PwaInstallabilityStatus   string `json:"pwaInstallabilityStatus,omitempty"`
+	WebDisplayMode            string `json:"webDisplayMode,omitempty"`
+	IsWebNativeShareAvailable bool   `json:"isWebNativeShareAvailable,omitempty"`
+}
+type clientConfigInfo struct {
 	AppInstallData string `json:"appInstallData,omitempty"`
+}
+
+type SWData struct {
+	HL             string `json:"hl,omitempty" default:"en"`
+	GL             string `json:"gl,omitempty" default:"US"`
+	RemoteHost     string `json:"remote_host,omitempty" default:"104.160.41.159"`
+	VisitorData    string `json:"visitor_data,omitempty" default:""`
+	ClientVersion  string `json:"client_version,omitempty" default:""`
+	OsName         string `json:"os_name,omitempty" default:"Windows"`
+	OsVersion      string `json:"os_version,omitempty" default:"10.0"`
+	TimeZone       string `json:"time_zone,omitempty" default:"UTC"`
+	BrowserName    string `json:"browser_name,omitempty" default:"Chrome"`
+	BrowserVersion string `json:"browser_version,omitempty" default:"131.0.0.0"`
+	DeviceMake     string `json:"device_make,omitempty" default:""`
+	DeviceModel    string `json:"device_model,omitempty" default:""`
+	AppInstallData string `json:"app_install_data,omitempty" default:""`
 }
 
 // client info for the innertube API
@@ -189,14 +252,17 @@ type clientInfo struct {
 	version        string
 	userAgent      string
 	androidVersion int
+	sw             SWData
+	po             poToken
 }
 
 var (
 	// WebClient, better to use Android client but go ahead.
 	WebClient = clientInfo{
-		name:    "WEB",
-		version: "2.20241121.01.00",
-		key:     "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
+		name:      "WEB",
+		version:   "2.20241212.08.00",
+		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
+		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)",
 	}
 
 	// AndroidClient, https://github.com/LuanRT/YouTube.js/blob/main/src/utils/Constants.ts
@@ -231,11 +297,29 @@ func (c *Client) videoDataByInnertube(ctx context.Context, id string) ([]byte, e
 		}
 		data = innertubeRequest{
 			VideoID: id,
-			Context: c.prepareInnertubeContext(),
+			Context: c.prepareInnertubeContextWeb(),
 			PlaybackContext: &playbackContext{
 				ContentPlaybackContext: contentPlaybackContext{
-					SignatureTimestamp: sts,
+					AutoCaptionsDefaultOn: false,
+					AutonavState:          "STATE_OFF",
+					CurrentUrl:            "/watch?v=" + id,
+					HTML5Preference:       "HTML5_PREF_WANTS",
+					LactMilliseconds:      "-1",
+					Referer:               "https://www.youtube.com/",
+					SignatureTimestamp:    sts,
+					Splay:                 false,
+					Vis:                   0,
+					WatchAmbientModeContext: contextWatchAmbientModeContext{
+						HasShownAmbientMode:     false,
+						WatchAmbientModeEnabled: false,
+					},
 				},
+			},
+			ContentCheckOK: false,
+			RacyCheckOk:    false,
+			Params:         playerParams,
+			ServiceIntegrityDimensions: innertubeServiceIntegrityDimensions{
+				PoToken: c.client.po.PoToken,
 			},
 		}
 	} else {
@@ -269,39 +353,74 @@ func (c *Client) transcriptDataByInnertube(ctx context.Context, id string, lang 
 func (c *Client) prepareInnertubeContext() inntertubeContext {
 	return inntertubeContext{
 		Client: innertubeClient{
-			ClientName:         c.client.name,
-			ClientVersion:      c.client.version,
-			AndroidSDKVersion:  c.client.androidVersion,
-			UserAgent:          c.client.userAgent,
-			OsName:             "Android",
-			OsVersion:          "13",
-			Platform:           "MOBILE",
-			ClientFormFactor:   "SMALL_FORM_FACTOR",
-			AcceptLanguage:     "en",
-			AcceptRegion:       "US",
-			DeviceMake:         "Google",
-			DeviceModel:        "sdk_gphone64_x86_64",
-			ScreenHeightPoints: 840,
-			ScreenWidthPoints:  432,
-			ConfigInfo: ConfigInfo{
-				AppInstallData: c.getAppInstallData(),
-			},
-			TimeZone: "UTC",
-			Chipset:  "qcom;taro",
+			HL:            "en",
+			GL:            "US",
+			ClientName:    c.client.name,
+			ClientVersion: c.client.version,
 		},
 	}
 }
 
-// 获取 AppInstallData
-func (c *Client) getAppInstallData() string {
+func (c *Client) prepareInnertubeContextWeb() inntertubeContext {
+	sw := c.client.sw
+	po := c.client.po
+	return inntertubeContext{
+		Client: innertubeClient{
+			HL:                 sw.HL,
+			GL:                 sw.HL,
+			RemoteHost:         sw.RemoteHost,
+			ScreenDensityFloat: 1,
+			ScreenHeightPoints: 1440,
+			ScreenPixelDensity: 1,
+			ScreenWidthPoints:  2560,
+			VisitorData:        po.VisitorData,
+			ClientName:         c.client.name,
+			ClientVersion:      sw.ClientVersion,
+			OsName:             sw.OsName,
+			OsVersion:          sw.OsVersion,
+			Platform:           "DESKTOP",
+			ClientFormFactor:   "UNKNOWN_FORM_FACTOR",
+			UserInterfaceTheme: "USER_INTERFACE_THEME_LIGHT",
+			TimeZone:           sw.TimeZone,
+			UserAgent:          c.client.userAgent,
+			OriginalUrl:        "https://www.youtube.com",
+			DeviceMake:         sw.DeviceMake,
+			DeviceModel:        sw.DeviceModel,
+			BrowserName:        sw.BrowserName,
+			BrowserVersion:     sw.BrowserVersion,
+			UtcOffsetMinutes:   480,
+			MemoryTotalKbytes:  "8000000",
+			MainAppWebInfo: clientMainAppWebInfo{
+				GraftUrl:                  "https://www.youtube.com",
+				PwaInstallabilityStatus:   "PWA_INSTALLABILITY_STATUS_UNKNOWN",
+				WebDisplayMode:            "WEB_DISPLAY_MODE_BROWSER",
+				IsWebNativeShareAvailable: true,
+			},
+			ConfigInfo: clientConfigInfo{
+				AppInstallData: sw.AppInstallData,
+			},
+		},
+		User: inntertubeContextUser{
+			EnableSafetyMode: false,
+			LockedSafetyMode: false,
+		},
+		Request: inntertubeContextRequest{
+			UseSsl:                  true,
+			InternalExperimentFlags: []string{},
+		},
+	}
+}
+
+// 获取 SWData
+func (c *Client) getSW() SWData {
 	body, err := c.httpGetBodyBytes(context.Background(), "https://www.youtube.com/sw.js_data")
 	log := slog.With("appInstallData", body)
 	if err != nil {
-		return ""
+		return SWData{}
 	}
-	if string(body[:4]) != ")]}" {
+	if string(body[:4]) != ")]}'" {
 		log.Debug("error sw.js_data")
-		return ""
+		return SWData{}
 	}
 	r, _ := regexp.Compile(`^\)\]\}'`)
 	body = r.ReplaceAll(body, []byte(""))
@@ -310,10 +429,71 @@ func (c *Client) getAppInstallData() string {
 	data, err = simplejson.NewJson(body)
 	if err != nil {
 		log.Debug("error decode sw.js_data")
-		return ""
+		return SWData{}
 	}
-	dataSecret, _ := data.GetIndex(0).GetIndex(2).GetIndex(0).GetIndex(0).GetIndex(61).StringArray()
-	return dataSecret[len(dataSecret)-1]
+	sw := data.GetIndex(0).GetIndex(2).GetIndex(0).GetIndex(0)
+	appInstallData := sw.GetIndex(61).MustStringArray()
+
+	swData := SWData{
+		HL:             sw.GetIndex(0).MustString(),
+		GL:             sw.GetIndex(2).MustString(),
+		RemoteHost:     sw.GetIndex(3).MustString(),
+		VisitorData:    "Cgt3VW1xalpEeXp4Yyixqfu6BjIKCgJVUxIEGgAgIQ%3D%3D",
+		ClientVersion:  sw.GetIndex(16).MustString(),
+		OsName:         sw.GetIndex(17).MustString(),
+		OsVersion:      sw.GetIndex(18).MustString(),
+		TimeZone:       sw.GetIndex(79).MustString(),
+		BrowserName:    sw.GetIndex(86).MustString(),
+		BrowserVersion: sw.GetIndex(87).MustString(),
+		DeviceMake:     sw.GetIndex(11).MustString(),
+		DeviceModel:    sw.GetIndex(12).MustString(),
+		AppInstallData: appInstallData[len(appInstallData)-1],
+	}
+	if swData.HL == "" {
+		swData.HL = "en"
+	}
+	if swData.GL == "" {
+		swData.GL = "US"
+	}
+	if swData.OsName == "" {
+		swData.OsName = "Windows"
+	}
+	if swData.OsVersion == "" {
+		swData.OsVersion = "10.0"
+	}
+	if swData.TimeZone == "" {
+		swData.TimeZone = "UTC"
+	}
+	if swData.BrowserName == "" {
+		swData.BrowserName = "Chrome"
+	}
+	if swData.BrowserVersion == "" {
+		swData.BrowserVersion = "131.0.0.0"
+	}
+	c.client.sw = swData
+	return swData
+}
+
+// 获取 SWData
+func (c *Client) getPoToken() poToken {
+	body, err := c.httpGetBodyBytes(context.Background(), "https://tools.liu.app/potoken/token")
+	log := slog.With("getPoToken", body)
+	if err != nil {
+		return poToken{}
+	}
+
+	var data *simplejson.Json
+	data, err = simplejson.NewJson(body)
+	if err != nil {
+		log.Debug("error decode sw.js_data")
+		return poToken{}
+	}
+	poData := poToken{
+		PoToken:     data.Get("potoken").MustString(),
+		VisitorData: data.Get("visitor_data").MustString(),
+	}
+	c.client.po = poData
+	return poData
 }
 
 func (c *Client) prepareInnertubePlaylistData(ID string, continuation bool) innertubeRequest {
