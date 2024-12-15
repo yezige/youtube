@@ -24,7 +24,7 @@ const (
 	Size1Mb  = Size1Kb * 1024
 	Size10Mb = Size1Mb * 10
 
-	playerParams = "YAHIAQE%3D"
+	playerParams = "YAHIAQE="
 )
 
 var (
