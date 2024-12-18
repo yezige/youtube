@@ -86,6 +86,8 @@ func (c *Client) videoFromID(ctx context.Context, id string) (*Video, error) {
 	if err != nil {
 		return nil, err
 	}
+	slog.With("body", body)
+	slog.Debug("videoFromID body")
 
 	v := Video{
 		ID: id,
