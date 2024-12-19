@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -33,7 +34,8 @@ var (
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
 // var DefaultClient = AndroidClient
-var DefaultClient = WebClient
+// var DefaultClient = WebClient
+var DefaultClient = TVClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
@@ -86,8 +88,7 @@ func (c *Client) videoFromID(ctx context.Context, id string) (*Video, error) {
 	if err != nil {
 		return nil, err
 	}
-	slog.With("body", body)
-	slog.Debug("videoFromID body")
+	log.Println("videoFromID body: " + string(body))
 
 	v := Video{
 		ID: id,
@@ -265,6 +266,13 @@ var (
 		version:   "2.20241212.08.00",
 		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
 		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)",
+	}
+
+	TVClient = clientInfo{
+		name:      "TVHTML5",
+		version:   "7.20241016.15.00",
+		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
+		userAgent: "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version",
 	}
 
 	// AndroidClient, https://github.com/LuanRT/YouTube.js/blob/main/src/utils/Constants.ts
