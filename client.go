@@ -26,7 +26,7 @@ const (
 var ErrNoFormat = errors.New("no video format provided")
 
 // DefaultClient type to use. No reason to change but you could if you wanted to.
-var DefaultClient = IOSClient
+var DefaultClient = WebClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
