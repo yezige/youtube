@@ -35,7 +35,8 @@ var (
 // DefaultClient type to use. No reason to change but you could if you wanted to.
 // var DefaultClient = AndroidClient
 // var DefaultClient = WebClient
-var DefaultClient = TVClient
+// var DefaultClient = TVClient
+var DefaultClient = MWebClient
 
 // Client offers methods to download video metadata and video streams.
 type Client struct {
@@ -236,7 +237,6 @@ type SWData struct {
 	HL             string `json:"hl,omitempty" default:"en"`
 	GL             string `json:"gl,omitempty" default:"US"`
 	RemoteHost     string `json:"remote_host,omitempty" default:"104.160.41.159"`
-	VisitorData    string `json:"visitor_data,omitempty" default:""`
 	ClientVersion  string `json:"client_version,omitempty" default:""`
 	OsName         string `json:"os_name,omitempty" default:"Windows"`
 	OsVersion      string `json:"os_version,omitempty" default:"10.0"`
@@ -250,25 +250,40 @@ type SWData struct {
 
 // client info for the innertube API
 type clientInfo struct {
-	name           string
-	key            string
-	version        string
-	userAgent      string
-	androidVersion int
-	sw             SWData
-	po             poToken
+	name_id           string
+	api_version       string
+	static_visitor_id string
+	name              string
+	key               string
+	version           string
+	userAgent         string
+	androidVersion    int
+	sw                SWData
+	po                poToken
 }
 
 var (
 	// WebClient, better to use Android client but go ahead.
 	WebClient = clientInfo{
-		name:      "WEB",
-		version:   "2.20241212.08.00",
-		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
-		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)",
+		name_id:           "1",
+		api_version:       "v1",
+		static_visitor_id: "6zpwvWUNAco",
+		name:              "WEB",
+		version:           "2.20241212.08.00",
+		key:               "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
+		userAgent:         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)",
+	}
+
+	MWebClient = clientInfo{
+		name_id:     "2",
+		api_version: "v1",
+		name:        "MWEB",
+		version:     "2.20241205.01.00",
+		key:         "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
 	}
 
 	TVClient = clientInfo{
+		name_id:   "7",
 		name:      "TVHTML5",
 		version:   "7.20241016.15.00",
 		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8",
@@ -277,6 +292,7 @@ var (
 
 	// AndroidClient, https://github.com/LuanRT/YouTube.js/blob/main/src/utils/Constants.ts
 	AndroidClient = clientInfo{
+		name_id:        "3",
 		name:           "ANDROID",
 		version:        "19.35.36",
 		key:            "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
@@ -286,10 +302,12 @@ var (
 
 	// EmbeddedClient, not really tested.
 	EmbeddedClient = clientInfo{
-		name:      "WEB_EMBEDDED_PLAYER",
-		version:   "1.19700101",
-		key:       "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", // seems like same key works for both clients
-		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+		name_id:     "56",
+		api_version: "v1",
+		name:        "WEB_EMBEDDED_PLAYER",
+		version:     "1.19700101",
+		key:         "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", // seems like same key works for both clients
+		userAgent:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
 	}
 )
 
@@ -448,7 +466,6 @@ func (c *Client) getSW() SWData {
 		HL:             sw.GetIndex(0).MustString(),
 		GL:             sw.GetIndex(2).MustString(),
 		RemoteHost:     sw.GetIndex(3).MustString(),
-		VisitorData:    "Cgt3VW1xalpEeXp4Yyixqfu6BjIKCgJVUxIEGgAgIQ%3D%3D",
 		ClientVersion:  sw.GetIndex(16).MustString(),
 		OsName:         sw.GetIndex(17).MustString(),
 		OsVersion:      sw.GetIndex(18).MustString(),
@@ -752,6 +769,7 @@ func (c *Client) httpDo(req *http.Request) (*http.Response, error) {
 	}
 
 	req.Header.Set("User-Agent", c.client.userAgent)
+	req.Header.Set("X-Youtube-Client-Name", c.client.name_id)
 	req.Header.Set("Origin", "https://youtube.com")
 	req.Header.Set("Sec-Fetch-Mode", "navigate")
 

@@ -99,6 +99,8 @@ func (c *Client) decryptNParam(config playerConfig, query url.Values) (url.Value
 
 	if c.client.name == "WEB" {
 		query.Set("cver", c.client.version)
+	} else if c.client.name == "MWEB" {
+		query.Set("cver", c.client.version)
 	}
 
 	log.Debug("decryptNParam")
@@ -123,7 +125,7 @@ func (c *Client) decryptSignParam(config playerConfig, query url.Values) (url.Va
 		} else {
 			query.Set("signature", decoded)
 		}
-	
+
 		log = log.With("decoded", decoded)
 	}
 
