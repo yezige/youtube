@@ -1,11 +1,11 @@
 Download Youtube Video in Golang
 ==================
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/youtube/master/LICENSE)
-[![Go Reference](https://pkg.go.dev/badge/github.com/kkdai/youtube.svg)](https://pkg.go.dev/github.com/kkdai/youtube/v2)
-[![Build Status](https://github.com/kkdai/youtube/workflows/go/badge.svg?branch=master)](https://github.com/kkdai/youtube/actions)
-[![Coverage](https://codecov.io/gh/kkdai/youtube/branch/master/graph/badge.svg)](https://codecov.io/gh/kkdai/youtube)
-[![](https://goreportcard.com/badge/github.com/kkdai/youtube)](https://goreportcard.com/badge/github.com/kkdai/youtube)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/yezige/youtube/master/LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/github.com/yezige/youtube.svg)](https://pkg.go.dev/github.com/yezige/youtube/v2)
+[![Build Status](https://github.com/yezige/youtube/workflows/go/badge.svg?branch=master)](https://github.com/yezige/youtube/actions)
+[![Coverage](https://codecov.io/gh/yezige/youtube/branch/master/graph/badge.svg)](https://codecov.io/gh/yezige/youtube)
+[![](https://goreportcard.com/badge/github.com/yezige/youtube)](https://goreportcard.com/badge/github.com/yezige/youtube)
 
 
 This package is a Youtube video download package, for more detail refer [https://github.com/ytdl-org/youtube-dl](https://github.com/ytdl-org/youtube-dl) for more download options.
@@ -22,7 +22,7 @@ This tool is meant to be used to download CC0 licenced content, we do not suppor
 ### Run Manually
 
 ```shell
-git clone https://github.com/kkdai/youtube.git && cd youtube
+git clone https://github.com/yezige/youtube.git && cd youtube
 go run ./cmd/youtubedr
 ```
 
@@ -31,7 +31,7 @@ go run ./cmd/youtubedr
 Please ensure you have installed Go 1.22 or later.
 
 ```shell
-go install github.com/kkdai/youtube/v2/cmd/youtubedr@latest
+go install github.com/yezige/youtube/v2/cmd/youtubedr@latest
 ```
 
 ### Mac
