@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yezige/youtube/v2"
+	"github.com/yezige/youtube/v20"
 )
 
 // ExampleDownload : Example code for how to use this package for download video.
