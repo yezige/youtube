@@ -83,7 +83,7 @@ func sortFormat(i int, j int, formats FormatList) bool {
 	// Sort by Width
 	if formats[i].Width == formats[j].Width {
 		// Format 137 downloads slowly, give it less priority
-		// see https://github.com/kkdai/youtube/pull/171
+		// see https://github.com/yezige/youtube/pull/171
 		switch 137 {
 		case formats[i].ItagNo:
 			return false

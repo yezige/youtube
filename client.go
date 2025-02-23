@@ -598,7 +598,7 @@ func (c *Client) httpPostBodyBytes(ctx context.Context, url string, body interfa
 
 // downloadChunk writes the response data into the data channel of the chunk.
 // Downloading in multiple chunks is much faster:
-// https://github.com/kkdai/youtube/pull/190
+// https://github.com/yezige/youtube/pull/190
 func (c *Client) downloadChunk(req *http.Request, chunk *chunk) error {
 	q := req.URL.Query()
 	q.Set("range", fmt.Sprintf("%d-%d", chunk.start, chunk.end))

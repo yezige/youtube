@@ -46,7 +46,7 @@ func (c *Client) decipherURL(ctx context.Context, videoID string, cipher string)
 	return uri.String(), nil
 }
 
-// see https://github.com/kkdai/youtube/pull/244
+// see https://github.com/yezige/youtube/pull/244
 func (c *Client) unThrottle(ctx context.Context, videoID string, urlString string) (string, error) {
 	config, err := c.getPlayerConfig(ctx, videoID)
 	if err != nil {
